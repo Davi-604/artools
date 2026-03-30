@@ -1088,6 +1088,18 @@
         }
 
         function initIntroAnimation() {
+            if (window.scrollY > 50) {
+                // Se recarregou no meio da página, não faz animação de entrada,
+                // apenas crava os elementos em seu estado final para que o scrollTrigger assuma o controle sem piscos.
+                gsap.set('#step-1 .drop-in', { opacity: 1, scale: 1, y: 0 });
+                gsap.set('#step-1 .text-reveal-content', { y: '0%', opacity: 1 });
+                gsap.set('#step-1 .hero-desc', { opacity: 1, y: 0, filter: "blur(0px)" });
+                gsap.set('#step-1 .hero-cta', { opacity: 1, scale: 1, y: 0 });
+                gsap.set('#step-1 .hero-specs', { opacity: 1, x: 0 });
+                gsap.set('.master-tag-label', { opacity: 1 });
+                return;
+            }
+
             // Entradas Dinâmicas Individuais e Complexas (Referências: Animations & Architect)
             const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
 
@@ -1100,6 +1112,9 @@
         }
 
         function initFluidCanvasScroll() {
+            // Oculta firmemente os ghost cards para evitar sobreposição no momento do carregamento
+            gsap.set(['#step-2', '#step-3'], { opacity: 0, y: 150, pointerEvents: 'none' });
+
             // GSAP 1: Scrub do Vídeo ao fundo
             ScrollTrigger.create({
                 trigger: ".hero-pin-section",
@@ -1129,31 +1144,33 @@
                 }
             });
 
-            // Etapa A: Saídas Multidirecionais e Assimétricas na descida do scroll!
-            narrativeTL.to('#step-1 .drop-in', { y: -50, opacity: 0, duration: 1, ease: "power2.inOut" }, 0);
-            narrativeTL.to('#step-1 h1', { filter: "blur(15px)", scale: 0.95, opacity: 0, duration: 1.2, ease: "power2.in" }, 0.2); // Título dissolve em desfoque
-            narrativeTL.to('#step-1 .hero-desc', { x: -40, filter: "blur(10px)", opacity: 0, duration: 1, ease: "power2.in" }, 0.4); // Parágrafo desliza para a esquerda tremendo
-            narrativeTL.to('#step-1 .hero-cta', { scale: 0.8, opacity: 0, duration: 0.8, ease: "back.in(1.2)" }, 0.5); // Botão retrai elástico
-            narrativeTL.to('#step-1 .hero-specs', { y: 50, opacity: 0, duration: 1, ease: "power2.in" }, 0.6); // Specs desabam pra baixo
-            narrativeTL.to('.master-tag-label', { scale: 0.7, y: 40, opacity: 0, duration: 0.8 }, 0.7);
+            // Etapa A: Saídas Multidirecionais com immediateRender: false 
+            // Isso evita que o ScrollTrigger atropele a animação de entrada intro!
+            narrativeTL.fromTo('#step-1 .drop-in', { y: 0, opacity: 1 }, { y: -50, opacity: 0, duration: 1, ease: "power2.inOut", immediateRender: false }, 0);
+            narrativeTL.fromTo('#step-1 h1', { filter: "blur(0px)", scale: 1, opacity: 1 }, { filter: "blur(15px)", scale: 0.95, opacity: 0, duration: 1.2, ease: "power2.in", immediateRender: false }, 0.2);
+            narrativeTL.fromTo('#step-1 .hero-desc', { x: 0, filter: "blur(0px)", opacity: 1 }, { x: -40, filter: "blur(10px)", opacity: 0, duration: 1, ease: "power2.in", immediateRender: false }, 0.4);
+            narrativeTL.fromTo('#step-1 .hero-cta', { scale: 1, opacity: 1 }, { scale: 0.8, opacity: 0, duration: 0.8, ease: "back.in(1.2)", immediateRender: false }, 0.5);
+            narrativeTL.fromTo('#step-1 .hero-specs', { y: 0, opacity: 1 }, { y: 50, opacity: 0, duration: 1, ease: "power2.in", immediateRender: false }, 0.6);
+            narrativeTL.fromTo('.master-tag-label', { scale: 1, y: 0, opacity: 1 }, { scale: 0.7, y: 40, opacity: 0, duration: 0.8, immediateRender: false }, 0.7);
 
             // Pausa sutil mantendo o vazio visual como respiro cinematográfico
             narrativeTL.to({}, { duration: 0.6 });
 
             // Etapa B: Entra Componente 2 (Card de Distribuição Glass Effect)
-            narrativeTL.fromTo('#step-2', { y: 150, opacity: 0 }, { y: 0, opacity: 1, duration: 1.2, ease: "power2.out" });
+            // Aqui podemos liberar o pointerEvents pro usuário interagir
+            narrativeTL.fromTo('#step-2', { y: 150, opacity: 0, pointerEvents: 'none' }, { y: 0, opacity: 1, pointerEvents: 'auto', duration: 1.2, ease: "power2.out", immediateRender: false });
 
             // Pausa longa mantendo o Card 2 centralizado
             narrativeTL.to({}, { duration: 2.0 });
 
-            // Etapa C: Sai Componente 2
-            narrativeTL.to('#step-2', { y: -150, opacity: 0, duration: 1.2, ease: "power2.in" });
+            // Etapa C: Sai Componente 2 (garantindo o state com fromTo)
+            narrativeTL.fromTo('#step-2', { y: 0, opacity: 1, pointerEvents: 'auto' }, { y: -150, opacity: 0, pointerEvents: 'none', duration: 1.2, ease: "power2.in", immediateRender: false });
 
             // Pausa sutil
             narrativeTL.to({}, { duration: 0.3 });
 
             // Etapa D: Entra Componente 3 (Card Fricção Zero Dark Effect)
-            narrativeTL.fromTo('#step-3', { y: 150, opacity: 0 }, { y: 0, opacity: 1, duration: 1.2, ease: "power2.out" });
+            narrativeTL.fromTo('#step-3', { y: 150, opacity: 0, pointerEvents: 'none' }, { y: 0, opacity: 1, pointerEvents: 'auto', duration: 1.2, ease: "power2.out", immediateRender: false });
 
             // Fica até o fim onde a seção inferior toma conta naturalmente!
             narrativeTL.to({}, { duration: 2.0 });
